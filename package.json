@@ -1,0 +1,16 @@
+{
+  "name": "report-generator",
+  "version": "1.0.0",
+  "description": "Report Generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "npm": "^6.8.0",
+    "pdfkit": "^0.9.0",
+    "uuid": "^3.3.2"
+  }
+}

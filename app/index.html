@@ -1,0 +1,53 @@
+<!doctype html>
+<meta charset=utf8>
+<link rel=stylesheet href="https://prosemirror.net/css/editor.css">
+<script src="https://prosemirror.net/examples/prosemirror.js"></script>
+<script src="require-pm.js"></script>
+
+<script src="index.js" defer></script>
+<base href="http://prosemirror.net/">
+
+<p>Inline editor: <span id="text-editor"></span></p>
+
+<style>
+  #text-editor { background-color: rgba(0, 0, 0, 0.05); padding: 0 }
+  .ProseMirror { min-height: none !important }
+  .ProseMirror a { text-decoration: underline; }
+  note, notegroup { display: block; border: 1px solid silver; border-radius: 3px; padding: 3px 6px; margin: 5px 0; }
+  notegroup { border-color: #66f }
+  p.boring { background: #eee; color: #444; }
+  span[title] { background: grey}
+  span[proforma="T1"] {background: blue; color: #aaa}
+  span[proforma="T2"] {background: red; color: #aaa}
+  shouting { display: inline; text-transform: uppercase; font-weight: bold; }
+  star { display: inline; font-size: 190%; line-height: 1; vertical-align: -10%; color: #a8f; -webkit-text-stroke: 1px #75b; }
+</style>
+
+<div id="note-editor"></div>
+
+<div id="star-editor" class="editor"></div>
+
+<div style="display: none">
+  <div id="text-content">Such as this sentence.</div>
+  <div id="note-content">
+    <note>Do laundry</note>
+    <note>Water the tomatoes</note>
+    <notegroup>
+      <note>Buy flour</note>
+      <note>Get toilet paper</note>
+    </notegroup>
+  </div>
+  <div id="star-content">
+    <p>This is a <star></star>nice<star></star> <span proforma="T1">paragraph, it can have </span><shouting>anything</shouting> in it.</p>
+    <p>
+      aawdaw awdwad awdawdawdwadawd adawdwadawd awdawda awdawd awdawdawd wd wdwd dwdwdwdwd wdwd  dwdwdwd dwdwdwd wdwdw wdwdw dwdwd w dwdwdw
+    </p>
+<p>
+wd wdwdwdwdwdwd dwdwdw dwdwdw wdwdwdw wdwdwdw wdwdwdwdwd wdwdwd wdwdwd wdwdwd wdwd awdawd awdadwa dwadaw dawd wadawd awdawd awdawdaw awdawdaw awdawd awd awdwad awdawd awdawda awdawdadawd awdawdaw awdawd  
+    </p>
+
+   
+    <p class="boring">This paragraph is ,boring, it can't have anything.</p>
+    <p>Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link.</p>
+  </div>
+</div>

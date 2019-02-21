@@ -1,8 +1,53 @@
 var PDFDocument = require('pdfkit');
 var fs = require("fs");
 const util = require('./util.js');
+const fileSystem = require('fs');
+const path = require('path');
+const express = require('express');
+const bodyParser = require('body-parser');
+const http = require('http');
 
-var document = {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a "},{"type":"star"},{"type":"text","text":"nice"},{"type":"star"},{"type":"text","text":" paragraph, it can have "},{"type":"text","marks":[{"type":"shouting"}],"text":"anything"},{"type":"text","text":" in it."}]},{"type":"paragraph","content":[{"type":"text","text":"aawdaw awdwad awdawdawdwadawd adawdwadawd awdawda awdawd awdawdawd wd wdwd dwdwdwdwd wdwd dwdwdwd dwdwdwd wdwdw wdwdw dwdwd w dwdwdw"}]},{"type":"paragraph","content":[{"type":"text","text":"wd wdwdwdwdwdwd dwdwdw dwdwdw wdwdwdw wdwdwdw wdwdwdwdwd wdwdwd wdwdwd wdwdwd wdwd awdawd awdadwa dwadaw dawd wadawd awdawd awdawdaw awdawdaw awdawd awd awdwad awdawd awdawda awdawdadawd awdawdaw awdawd"}]},{"type":"boring_paragraph","content":[{"type":"text","text":"This paragraph is boring, it can't have anything."}]},{"type":"paragraph","content":[{"type":"text","text":"Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link."}]}]};
+
+
+
+const port = 3000
+
+
+const app = express();
+app.use(express.json())
+
+app.get('/',(req,res) => res.send("Hello World!"));
+
+app.post('/pdf1',(req,res) => {
+
+	console.log(req.body.document);
+	
+});
+
+app.get('/pdf',(req,res)=>{
+	var filePath = path.join(__dirname, 'output.pdf');
+    var stat = fileSystem.statSync(filePath);
+    
+    res.writeHead(200, {
+        'Content-Type': 'application/pdf', 
+        'Content-Length': stat.size
+    });
+    
+    var readStream = fileSystem.createReadStream(filePath);
+    readStream.on('data', function(data) {
+        res.write(data);
+    });
+    
+    readStream.on('end', function() {
+        res.end();        
+    });
+});
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+  
+
+var document = {"type":"doc","content":[{"type":"boring_paragraph","content":[{"type":"text","text":"This paragraph is ,boring, it can't have anything."}]},{"type":"paragraph","content":[{"type":"text","text":"Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link."}]}]};
 util.store(document);
 const doc = new PDFDocument;
 var handleContent = (doc, content) => {
@@ -43,7 +88,10 @@ var handleParagraph =(doc, doct) => {
     })
 }
 
+
+
 doc.pipe(fs.createWriteStream('output.pdf'));
+
 document.content.map(content => {
 	handleContent(doc, content)
 });

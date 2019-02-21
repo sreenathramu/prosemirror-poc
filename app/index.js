@@ -94,7 +94,7 @@ const {keymap} = require("prosemirror-keymap")
 
 let starKeymap = keymap({
   "Mod-b": toggleMark(starSchema.marks.shouting),
-  "Mod-j": toggleLink,
+  "Mod-q": toggleLink,
   "Mod-Space": insertStar,
   "Mod-k": toggleComment
 })
@@ -127,6 +127,7 @@ function insertStar(state, dispatch) {
   return true
 }
 
+
 const {DOMParser} = require("prosemirror-model")
 const {EditorState} = require("prosemirror-state")
 const {EditorView} = require("prosemirror-view")
@@ -136,17 +137,51 @@ const {history, undo, redo} = require("prosemirror-history")
 let histKeymap = keymap({"Mod-z": undo, "Mod-y": redo})
 
 function start(place, content, schema, plugins = []) {
-  let doc = DOMParser.fromSchema(schema).parse(content)
+  let doc = DOMParser.fromSchema(schema).parse(content);
+  let state = EditorState.create({
+    doc,
+    plugins: plugins.concat([histKeymap, keymap(baseKeymap), history()])
+  });
+
+  function generatePDF(){
+    let doc = DOMParser.fromSchema(schema).parse(document.querySelector("#star-editor"));
+    fetch("http://localhost:3000/pdf1",{
+      method: "POST",
+      mode: "no-cors",
+      credentials: "same-origin",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"document":doc}),
+    }) 
+    .then(response => response.json());
+    // .then(blob => {
+    //     var url = window.URL.createObjectURL(blob);
+    //     var a = document.createElement('a');
+    //     a.href = url;
+    //     a.download = "Content.pdf";
+    //     document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+    //     a.click();    
+    //     a.remove();  //afterwards we remove the element again         
+    // });
+
+    // fetch("http://localhost:3000/pdf",
+    // {     
+    // mode: "no-cors",
+    // credentials: "same-origin",
+    // headers: {
+    //   "Content-Type": "application/json",
+    // }})
+    // .then( response => window.open("http://localhost:3000/pdf",'_blank'));
+  }
+  document.querySelector("#button1").addEventListener("click",generatePDF,false);
   return new EditorView(place, {
-    state: EditorState.create({
-      doc,
-      plugins: plugins.concat([histKeymap, keymap(baseKeymap), history()])
-    })
+    state
   })
 }
 
 function id(str) { return document.getElementById(str) }
 
-start({mount: id("text-editor")}, id("text-content"), textSchema)
-start(id("note-editor"), id("note-content"), noteSchema, [keymap({"Mod-Space": makeNoteGroup})])
+
+//start(id("note-editor"), id("note-content"), noteSchema, [keymap({"Mod-Space": makeNoteGroup})])
 start(id("star-editor"), id("star-content"), starSchema, [starKeymap])

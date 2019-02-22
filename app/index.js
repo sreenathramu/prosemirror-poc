@@ -59,15 +59,22 @@ let starSchema = new Schema({
       toDOM() { return ["formula", 0] },
       parseDOM: [{tag: "formula"}]
     },
+    name: {
+      inline: true,
+      group: "inline",
+      content: "text*",
+      toDOM() { return ["name", 0]},
+      parseDOM: [{tag:"name"}]
+    },
     paragraph: {
       group: "block",
-      content: "(inline+) | (formula+)",
+      content: "(inline)* | (formula)* | (name)*",
       toDOM() { return ["p", 0] },
       parseDOM: [{tag: "p"}]
     },
     boring_paragraph: {
       group: "block",
-      content: "text*",
+      content: "text* | (formula)*",
       marks: "",
       toDOM() { return ["p", {class: "boring"}, 0] },
       parseDOM: [{tag: "p.boring", priority: 60}]
@@ -92,6 +99,10 @@ let starSchema = new Schema({
       toDOM(node) { return ["span", {title: node.attrs.comment}] },
       parseDOM: [{tag: "span[title]", getAttrs(dom) { return {comment: dom.attributes.title.value} }}],
       inclusive: false
+    },
+    formula: {
+      attr: {formula: {}},
+      toDOM(node) { return ["formula", {html}]}
     }
   }
 })
@@ -132,6 +143,11 @@ function insertStar(state, dispatch) {
     return false
   dispatch(state.tr.replaceSelectionWith(type.create()))
   return true
+}
+function insertFormula(state, dispatch){
+  let type = starSchema.node.formula
+  let {$from} = state.selection
+  
 }
 
 
@@ -175,24 +191,7 @@ function start(place, content, schema, plugins = []) {
       .catch(error => {
           console.log(error);
       });
-    // .then(blob => {
-    //     var url = window.URL.createObjectURL(blob);
-    //     var a = document.createElement('a');
-    //     a.href = url;
-    //     a.download = "Content.pdf";
-    //     document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
-    //     a.click();    
-    //     a.remove();  //afterwards we remove the element again         
-    // });
 
-    // fetch("http://localhost:3000/pdf",
-    // {     
-    // mode: "no-cors",
-    // credentials: "same-origin",
-    // headers: {
-    //   "Content-Type": "application/json",
-    // }})
-    // .then( response => window.open("http://localhost:3000/pdf",'_blank'));
   }
   document.querySelector("#button1").addEventListener("click",generatePDF,false);
   return new EditorView(place, {

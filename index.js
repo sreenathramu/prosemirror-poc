@@ -6,21 +6,22 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
+var cors = require('cors');
+const expr = require('expression-eval');
 
 
 
-
-const port = 3000
+const port = 3000;
 
 
 const app = express();
-app.use(express.json())
-
+app.use(bodyParser.json());
+app.use(cors());
 app.get('/',(req,res) => res.send("Hello World!"));
 
 app.post('/pdf1',(req,res) => {
 
-	console.log(req.body.document);
+	generateDoc(req.body, res)
 	
 });
 
@@ -49,51 +50,81 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 var document = {"type":"doc","content":[{"type":"boring_paragraph","content":[{"type":"text","text":"This paragraph is ,boring, it can't have anything."}]},{"type":"paragraph","content":[{"type":"text","text":"Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link."}]}]};
 util.store(document);
-const doc = new PDFDocument;
-var handleContent = (doc, content) => {
-    switch(content.type) {
-        case 'text' :
-        	handleText(doc, content)
-        	break;
-        case 'paragraph': {
-        	handleParagraph(doc, content)
-        	break;
-        }
-    }
-}
-var handleText = (doc, content, continued) => {
-	if(content.marks && content.marks.length > 0) {
-		if(content.marks[0].type === 'shouting') {
-			doc.font('Courier-Bold')
+function generateDoc(document, response) {
+	const doc = new PDFDocument;
+	var handleContent = (doc, content) => {
+		switch(content.type) {
+			case 'text' :
+				handleText(doc, content)
+				break;
+			case 'paragraph': {
+				handleParagraph(doc, content)
+				break;
+			}
+			case 'formula': {
+				
+				
+				break;
+			}
 		}
-	} else {
-		doc.font('Courier')
 	}
-	doc.fontSize(25)
-           .text(content.text, {continued});
+	const handleFormula = (doc, content) => {
+		if(!content.content) {
+			return;
+		}
+		const d = content.content[0].text;
+		console.log(document.state)
+		const ast = expr.parse(d); // abstract syntax tree (AST)
+		const value = expr.eval(ast, document.state); 
+		content.content[0].text = value;
+		handleText(doc, content.content[0], false);
+	}
+	var handleText = (doc, content, continued) => {
+		if(content.marks && content.marks.length > 0) {
+			if(content.marks[0].type === 'shouting') {
+				doc.font('Courier-Bold')
+			}
+		} else {
+			doc.font('Courier')
+		}
+		doc.fontSize(25)
+			.text(content.text, {continued});
+		if(!continued) {
+			doc.fontSize(25)
+			.text(' ', {continued: false});
+		}
+	}
+
+	var handleParagraph =(doc, doct) => {
+		if(!doct.content) {
+			doc.fontSize(25)
+			.text(' ', {continued: false});
+			return;
+		}
+		doct.content.map((content, index) => {
+			switch(content.type) {
+				case 'text': 
+					handleText(doc, content, doct.content.length - 1 > index)
+					break;
+				
+				case 'star': 
+					//doc.image('star.png', {width: 15, height: 15, continued: doct.content.length - 1 > index})
+					break;
+				case "formula":
+					handleFormula(doc, content)
+					break;
+				
+			}
+		})
+	}
+
+
+
+	doc.pipe(response);
+
+	document.document.content.map(content => {
+		handleContent(doc, content)
+	});
+
+	doc.end();
 }
-
-var handleParagraph =(doc, doct) => {
-    doct.content.map((content, index) => {
-    	switch(content.type) {
-    		case 'text': 
-    			handleText(doc, content, doct.content.length - 1 > index)
-    			break;
-    		
-    		case 'star': 
-    			//doc.image('star.png', {width: 15, height: 15, continued: doct.content.length - 1 > index})
-    			break;
-    		
-    	}
-    })
-}
-
-
-
-doc.pipe(fs.createWriteStream('output.pdf'));
-
-document.content.map(content => {
-	handleContent(doc, content)
-});
-
-doc.end();

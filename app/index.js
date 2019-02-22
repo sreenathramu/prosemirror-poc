@@ -52,9 +52,16 @@ let starSchema = new Schema({
       toDOM() { return ["star", "🟊"] },
       parseDOM: [{tag: "star"}]
     },
+    formula: {
+      inline: true,
+      group: "inline",
+      content: "text*",
+      toDOM() { return ["formula", 0] },
+      parseDOM: [{tag: "formula"}]
+    },
     paragraph: {
       group: "block",
-      content: "inline*",
+      content: "(inline+) | (formula+)",
       toDOM() { return ["p", 0] },
       parseDOM: [{tag: "p"}]
     },
@@ -147,14 +154,27 @@ function start(place, content, schema, plugins = []) {
     let doc = DOMParser.fromSchema(schema).parse(document.querySelector("#star-editor"));
     fetch("http://localhost:3000/pdf1",{
       method: "POST",
-      mode: "no-cors",
-      credentials: "same-origin",
-      headers: {
+      headers:{
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({"document":doc}),
+      body: JSON.stringify({"document":doc, state: JSON.parse(document.querySelector("#state").value)}),
     }) 
-    .then(response => response.json());
+    .then(function(response) {
+      return response.blob();
+    })
+    .then(blob => {
+      //Create a Blob from the PDF Stream
+          const file = new Blob(
+            [blob], 
+            {type: 'application/pdf'});
+      //Build a URL from the file
+          const fileURL = URL.createObjectURL(file);
+      //Open the URL on new Window
+          window.open(fileURL);
+      })
+      .catch(error => {
+          console.log(error);
+      });
     // .then(blob => {
     //     var url = window.URL.createObjectURL(blob);
     //     var a = document.createElement('a');

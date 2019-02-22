@@ -15,6 +15,10 @@
   .ProseMirror a { text-decoration: underline; }
   note, notegroup { display: block; border: 1px solid silver; border-radius: 3px; padding: 3px 6px; margin: 5px 0; }
   notegroup { border-color: #66f }
+  formula {
+    color: rgb(238, 236, 236);
+    background: #444;
+  }
   p.boring { background: #eee; color: #444; }
   span[title] { background: grey}
   span[proforma="T1"] {background: blue; color: #aaa}
@@ -31,9 +35,9 @@
   <div id="text-content">Such as this sentence.</div>
   <div id="star-content">
     <p class="boring">This paragraph is ,boring, it can't have anything.</p>
-    <p>Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link.</p>
+    <p>Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link. <formula >1+1</formula></p>
   </div>
 </div>
-
+<div><textarea id="state"></textarea></div>
 <button type="button" id="button1" name="Generate PDF">Generate PDF</button>
 

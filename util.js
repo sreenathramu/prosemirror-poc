@@ -2,46 +2,54 @@ const uuid = require('uuid/v4');
 module.exports =  {
 	store: (doc) => {
 		const getContent = (document, result) => {
-			const id = uuid();
-			document.id = id;
+			
+			
 			if(!document.id) {
+				const id = uuid();
 				document.id = id;
 			}
-			if(result.acc.length === 0) {
-				result.startNode = id;
+			if(!result.startNode) {
+				result.startNode = document.id;
 			}
 			if(!document.content) {
-				result.acc[id] = (document);
+				result.acc[document.id ] = (document);
 				result.childrens[document.id] = [];
 				return result;
 			}
 
 			const { content, ...doc } = document;
-			result.childrens[id] = content.map(item => {
+			result.childrens[document.id ] = content.map(item => {
 				const id = uuid();
 				item.id = id;
 				return id;
 			}) ;
-			result.acc[id] = (doc);
+			result.acc[document.id ] = (doc);
 			return content.reduce((acc, item)=> getContent(item, acc), result);
 		}
 		const content = getContent(doc, {
 			acc: {},
 			childrens: {}
 		});
-		console.log(content.acc);
+		return content;
+		//console.log(content.acc);
 	},
 	restore: (state) => {
 		const {[state.startNode]:startNode, ...startState} = state.acc;
-		const restoreDocument = (currentState, document) => {
+		const restoreDocument = (document) => {
 			const childrens = state.childrens[document.id];
 			if(childrens.length === 0) {
 				return document;
 			}
-			childrens.map(child => {
-				
-			})
+			const finalDocument = {
+				...document,
+				content: childrens.map(childId => {
+					const child = state.acc[childId];
+					return restoreDocument(child);
+				})
+			}
+			return finalDocument;
 		};
-		const finalDocument = restoreDocument(startState, startNode);
+		const finalDocument = restoreDocument(startNode);
+		return finalDocument;
 	}
 }
